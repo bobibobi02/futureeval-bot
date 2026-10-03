@@ -1,0 +1,33 @@
+name: Probe allowed models
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install forecasting-tools
+      - name: Probe models on the Metaculus proxy
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+        run: |
+          python - <<'EOF'
+          import asyncio
+          from forecasting_tools import GeneralLlm
+          MODELS = ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "o3", "o4-mini", "gpt-5", "gpt-5-mini", "gpt-5.1", "gpt-5.2", "claude-sonnet-4-5", "claude-sonnet-4-20250514", "claude-3-7-sonnet-latest", "claude-3-5-sonnet-20241022", "claude-opus-4-1", "claude-haiku-4-5", "claude-opus-4-5"]
+          async def probe(m):
+              try:
+                  r = await GeneralLlm(model="metaculus/" + m, timeout=60, allowed_tries=1).invoke("Reply with the single word OK")
+                  return m, "OK", str(r)[:30].replace("\n", " ")
+              except Exception as e:
+                  return m, "FAIL", str(e).replace("\n", " ")[:140]
+          async def main():
+              for m in MODELS:
+                  print(*(await probe(m)), flush=True)
+          asyncio.run(main())
+          EOF
