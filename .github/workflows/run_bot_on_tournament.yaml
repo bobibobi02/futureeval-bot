@@ -1,0 +1,30 @@
+name: Forecast on FutureEval tournament
+
+on:
+  workflow_dispatch:        # lets you press "Run workflow" manually
+  schedule:
+    - cron: "*/30 * * * *"  # every 30 minutes; new questions get picked up automatically
+
+# never run two copies at once (avoids double-forecasting and rate limits)
+concurrency:
+  group: forecast-bot
+  cancel-in-progress: false
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run bot
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+        run: python main.py --mode tournament
