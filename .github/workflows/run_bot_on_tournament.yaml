@@ -25,6 +25,6 @@ jobs:
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+          ASKNEWS_SECRET: ${{ ank_7q7trkmOf6pTfiIIwdjD6OoCN7HkIyHVcqsu2EX8pL }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
         run: python main.py --mode tournament
